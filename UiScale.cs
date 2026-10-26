@@ -1,7 +1,5 @@
 namespace HotelManagement
 {
-    // Form thiết kế cho màn hình lớn (client ~1745x1055). Nếu lớn hơn vùng làm việc của màn hình
-    // hiện tại thì thu nhỏ đồng đều cả form chính lẫn các form con (giữ nguyên bố cục).
     internal static class UiScale
     {
         public static float Factor { get; private set; } = 1f;
@@ -17,7 +15,6 @@ namespace HotelManagement
             form.Location = new Point(wa.Left + (wa.Width - form.Width) / 2, wa.Top + (wa.Height - form.Height) / 2);
         }
 
-        // Dùng cho form/control con được nhúng vào panelMain sau khi form chính đã thu nhỏ
         public static void ApplyToChild(Control child)
         {
             if (Factor < 0.999f && child.Tag as string != "uiscaled")
@@ -35,7 +32,6 @@ namespace HotelManagement
 
         private static void ScaleFonts(Control root, float f)
         {
-            // Đọc font gốc của tất cả control trước, rồi mới gán, để font kế thừa không bị nhân đôi
             var fonts = new List<(Control, Font)>();
             void Collect(Control c)
             {
