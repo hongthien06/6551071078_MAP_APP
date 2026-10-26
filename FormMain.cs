@@ -97,6 +97,8 @@ namespace HotelManagement
         }
         private void FormMain_Load(object sender, EventArgs e)
         {
+            UiScale.FitToScreen(this);
+            panelMain.ControlAdded += (s, ev) => UiScale.ApplyToChild(ev.Control);
             HienThiTrangChu();
         }
         private void HienThiThongTinNguoiDung()
