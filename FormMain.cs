@@ -53,11 +53,23 @@ namespace HotelManagement
         }
         private void button7_Click(object sender, EventArgs e)
         {
-            HienThiDangPhatTrien("Danh sách nhân viên");
+            Form formCon = new NhanVien.FormDanhSachNhanVien();
+            formCon.TopLevel = false;
+            formCon.FormBorderStyle = FormBorderStyle.None;
+            formCon.Dock = DockStyle.Fill;
+            XoaNoiDungPanelMain();
+            panelMain.Controls.Add(formCon);
+            formCon.Show();
         }
         private void button6_Click(object sender, EventArgs e)
         {
-            HienThiDangPhatTrien("Danh sách khách hàng");
+            Form formCon = new KhachHang.FormDanhSachKhachHang();
+            formCon.TopLevel = false;
+            formCon.FormBorderStyle = FormBorderStyle.None;
+            formCon.Dock = DockStyle.Fill;
+            XoaNoiDungPanelMain();
+            panelMain.Controls.Add(formCon);
+            formCon.Show();
         }
         private void btnQuanLyPhong_Click(object sender, EventArgs e)
         {
@@ -71,11 +83,23 @@ namespace HotelManagement
         }
         private void button12_Click(object sender, EventArgs e)
         {
-            HienThiDangPhatTrien("Danh sách tiện nghi");
+            Form formCon = new TienNghi.FormDanhSachTienNghi();
+            formCon.TopLevel = false;
+            formCon.FormBorderStyle = FormBorderStyle.None;
+            formCon.Dock = DockStyle.Fill;
+            XoaNoiDungPanelMain();
+            panelMain.Controls.Add(formCon);
+            formCon.Show();
         }
         private void button11_Click(object sender, EventArgs e)
         {
-            HienThiDangPhatTrien("Danh sách dịch vụ");
+            Form formCon = new DichVu.FormDanhSachDichVu();
+            formCon.TopLevel = false;
+            formCon.FormBorderStyle = FormBorderStyle.None;
+            formCon.Dock = DockStyle.Fill;
+            XoaNoiDungPanelMain(); // hàm có trong bản FormMain mình gửi trước; nếu chưa có, dùng panelMain.Controls.Clear();
+            panelMain.Controls.Add(formCon);
+            formCon.Show();
         }
         private void btnSoDoPhong_Click(object sender, EventArgs e)
         {

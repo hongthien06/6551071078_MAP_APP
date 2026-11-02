@@ -30,8 +30,8 @@ namespace HotelManagement.Phong
         public FormSuaPhong(string maPhong) : this()
         {
             this.maPhong = maPhong;
-            Text = $"Cập nhật phòng {maPhong} ";
-            label5.Text = $"Cập nhật thông tin phòng {maPhong} ";
+            Text = $"Cập nhật phòng {maPhong}";
+            label5.Text = $"Cập nhật thông tin phòng {maPhong}";
             LoadLoaiPhong();
             LoadThongTinPhong();
         }

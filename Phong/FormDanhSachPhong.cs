@@ -37,7 +37,7 @@ namespace HotelManagement.Phong
             {
                 hopLuu.Title = "Xuất danh sách phòng";
                 hopLuu.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
-                hopLuu.FileName = $"DanhSachPhong_ {DateTime.Now:yyyyMMdd_HHmm} .xlsx";
+                hopLuu.FileName = $"DanhSachPhong_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
                 if (hopLuu.ShowDialog() != DialogResult.OK)
                     return;
                 try
@@ -216,7 +216,7 @@ namespace HotelManagement.Phong
                 }
                 if (phong.Ttph == "Đang thuê" || phong.Ttph == "Đã đặt")
                 {
-                    MessageBox.Show($"Phòng {maPhong} đang ở trạng thái \" {phong.Ttph} \" nên không thể xóa.",
+                    MessageBox.Show($"Phòng {maPhong} đang ở trạng thái \"{phong.Ttph}\" nên không thể xóa.",
                        "Không thể xóa", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }

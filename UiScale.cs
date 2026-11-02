@@ -1,4 +1,4 @@
-namespace HotelManagement
+﻿namespace HotelManagement
 {
     internal static class UiScale
     {
