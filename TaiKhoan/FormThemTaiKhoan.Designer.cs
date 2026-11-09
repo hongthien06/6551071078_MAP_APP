@@ -81,7 +81,7 @@
             //
             cbCapDoQuyen.Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point, 0);
             cbCapDoQuyen.FormattingEnabled = true;
-            cbCapDoQuyen.Items.AddRange(new object[] { "3", "2", "1", "0" });
+            cbCapDoQuyen.Items.AddRange(new object[] { "3", "2", "1" });
             cbCapDoQuyen.Location = new Point(172, 230);
             cbCapDoQuyen.Margin = new Padding(3, 4, 3, 4);
             cbCapDoQuyen.Name = "cbCapDoQuyen";

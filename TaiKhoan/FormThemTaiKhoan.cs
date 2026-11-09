@@ -70,7 +70,7 @@ namespace HotelManagement.TaiKhoan
                 MessageBox.Show("Vui lòng điền đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            if (!int.TryParse(cbCapDoQuyen.SelectedItem.ToString(), out int quyen))
+            if (!int.TryParse(cbCapDoQuyen.SelectedItem.ToString(), out int quyen) || quyen < 1 || quyen > 3)
             {
                 MessageBox.Show("Cấp độ quyền không hợp lệ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;

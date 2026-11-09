@@ -159,7 +159,7 @@ public partial class HotelManagementContext : DbContext
             entity.ToTable("HoaDon", tb => tb.HasTrigger("CapNhatGiaTriHoaDon"));
 
             entity.Property(e => e.MaHd)
-                .HasMaxLength(5)
+                .HasMaxLength(10)
                 .HasColumnName("MaHD");
             entity.Property(e => e.DaXoa).HasDefaultValue(false);
             entity.Property(e => e.MaCtdp)

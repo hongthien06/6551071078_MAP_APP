@@ -127,7 +127,8 @@ public class CauTrucFormTests
             var cb = Rf.Get<ComboBox>(f, "cbCapDoQuyen");
             items = cb.Items.Cast<object>().Select(o => o.ToString()!).ToList();
         });
-        Assert.Equal(new[] { "3", "2", "1", "0" }, items);
+        // Chỉ có 3 cấp được định nghĩa (1 - Nhân viên, 2 - Quản lý, 3 - Admin)
+        Assert.Equal(new[] { "3", "2", "1" }, items);
         Assert.All(items, s => Assert.True(int.TryParse(s, out _)));
     }
 

@@ -9,7 +9,7 @@ namespace HotelManagement.Tests;
 /// <summary>Test các hàm tiện ích thuần (không cần CSDL).</summary>
 public class HamTienIchTests
 {
-    private static string TaoMa(IEnumerable<string> cacMa, string tienTo = "HD", int soChuSo = 3, int doDaiToiDa = 5)
+    private static string TaoMa(IEnumerable<string> cacMa, string tienTo = "HD", int soChuSo = 3, int doDaiToiDa = 10)
         => (string)Rf.CallStatic(typeof(FormChiTietPhieuThue), "TaoMaTiepTheo", cacMa, tienTo, soChuSo, doDaiToiDa)!;
 
     [Fact]
@@ -46,9 +46,24 @@ public class HamTienIchTests
     [Fact]
     public void TaoMaTiepTheo_VuotDoDaiToiDa_NemInvalidOperationException()
     {
-        // Cột MaHD là NVARCHAR(5) -> tối đa HD999
-        var ex = Assert.Throws<InvalidOperationException>(() => TaoMa(new[] { "HD999" }));
+        var ex = Assert.Throws<InvalidOperationException>(() => TaoMa(new[] { "HD999" }, doDaiToiDa: 5));
         Assert.Contains("HD", ex.Message);
+    }
+
+    [Fact]
+    public void TaoMaTiepTheo_SauHD999_SinhHD1000()
+    {
+        // Cột MaHD đã nới lên NVARCHAR(10) -> không còn giới hạn HD999
+        Assert.Equal("HD1000", TaoMa(new[] { "HD998", "HD999" }));
+        Assert.Equal("HD1001", TaoMa(new[] { "HD999", "HD1000" }));
+    }
+
+    [Fact]
+    public void ModelEF_MaHD_ChoPhep10KyTu()
+    {
+        using var db = new HotelManagement.Models.HotelManagementContext();
+        var p = db.Model.FindEntityType(typeof(HotelManagement.Models.HoaDon))!.FindProperty("MaHd")!;
+        Assert.Equal(10, p.GetMaxLength());
     }
 
     [Theory]

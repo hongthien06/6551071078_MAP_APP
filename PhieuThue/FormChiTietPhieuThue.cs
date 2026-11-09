@@ -321,7 +321,7 @@ namespace HotelManagement.PhieuThue
                     .Where(v => v.MaCtdp == maCTDP && v.DaXoa != true)
                     .Sum(v => v.ThanhTien ?? (v.Sl * v.MaDvNavigation.DonGia));
                 decimal tongTien = tienPhong + tienDV;
-                string maHD = TaoMaTiepTheo(db.HoaDons.Select(h => h.MaHd).ToList(), "HD", 3, 5);
+                string maHD = TaoMaTiepTheo(db.HoaDons.Select(h => h.MaHd).ToList(), "HD", 3, 10);
                 db.HoaDons.Add(new Models.HoaDon
                 {
                     MaHd = maHD,

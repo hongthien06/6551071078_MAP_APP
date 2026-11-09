@@ -444,6 +444,18 @@ public class NghiepVuDocDbTests
         });
     }
 
+    [DbFact]
+    public void CSDL_CotMaHD_Va_Trigger_DaNangCap()
+    {
+        using var db = Db.Mo();
+        int doDai = db.Database.SqlQueryRaw<int>(
+            "SELECT CAST(max_length / 2 AS int) AS Value FROM sys.columns WHERE object_id = OBJECT_ID('HoaDon') AND name = 'MaHD'").Single();
+        Assert.True(doDai >= 10, $"Cột HoaDon.MaHD mới dài {doDai} ký tự — hãy chạy Database/NangCap_MaHD_10KyTu.sql");
+        int triggerMoi = db.Database.SqlQueryRaw<int>(
+            "SELECT COUNT(*) AS Value FROM sys.sql_modules WHERE object_id = OBJECT_ID('CapNhatGiaTriHoaDon') AND definition LIKE '%@MaHD NVARCHAR(10)%'").Single();
+        Assert.Equal(1, triggerMoi);
+    }
+
     [Fact]
     public void ThemTaiKhoan_BoTrongThongTin_BaoVuiLongDienDu()
     {
