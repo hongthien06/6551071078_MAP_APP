@@ -330,21 +330,94 @@ public class NghiepVuDocDbTests
     public void HoaDon_TongTienHienThi_KhopTriGiaDaLuu()
     {
         using var db = Db.Mo();
-        var lech = db.HoaDons.AsNoTracking()
-            .Where(h => h.DaXoa != true)
-            .Select(h => new
+        var dsHd = db.HoaDons.AsNoTracking().Where(h => h.DaXoa != true && h.TriGia != null)
+            .Select(h => new { h.MaHd, TriGia = h.TriGia!.Value }).ToList();
+        var lech = new List<string>();
+
+        Sta.Run(() =>
+        {
+            using var w = new MessageBoxWatcher();
+
+            // Lưới danh sách hóa đơn
+            using (var ds = new FormDanhSachHoaDon())
             {
-                h.MaHd,
-                h.TriGia,
-                HienThi = (h.MaCtdpNavigation.ThanhTien ?? 0)
-                          + h.MaCtdpNavigation.Ctdvs.Where(c => c.DaXoa != true).Sum(c => c.MaDvNavigation.DonGia * c.Sl)
-            })
-            .ToList()
-            .Where(x => x.TriGia != x.HienThi)
-            .Select(x => $"{x.MaHd}: lưu {x.TriGia:N0} / hiển thị {x.HienThi:N0}")
-            .ToList();
+                Rf.Call(ds, "FormDanhSachHoaDon_Load", ds, EventArgs.Empty);
+                var g = Rf.Get<DataGridView>(ds, "dtgDanhSachHoaDon");
+                foreach (DataGridViewRow r in g.Rows)
+                {
+                    var hd = dsHd.FirstOrDefault(x => x.MaHd == (string)r.Cells["MaHD"].Value!);
+                    if (hd != null && (decimal)r.Cells["TriGia"].Value! != hd.TriGia)
+                        lech.Add($"Danh sách {hd.MaHd}: {r.Cells["TriGia"].Value:N0} ≠ {hd.TriGia:N0}");
+                }
+            }
+
+            // Màn hình chi tiết hóa đơn
+            foreach (var hd in dsHd)
+            {
+                using var f = new FormHoaDon(hd.MaHd);
+                Rf.Call(f, "FormHoaDon_Load", f, EventArgs.Empty);
+                string mongDoi = "Tổng tiền: " + (string)Rf.Call(f, "DinhDangTien", hd.TriGia)!;
+                string thucTe = Rf.Get<Label>(f, "lbTongTriGia").Text;
+                if (thucTe != mongDoi) lech.Add($"FormHoaDon {hd.MaHd}: '{thucTe}' ≠ '{mongDoi}'");
+            }
+            Assert.Empty(w.Messages);
+        });
 
         Assert.True(lech.Count == 0, "Hóa đơn bị lệch tổng tiền: " + string.Join("; ", lech));
+    }
+
+    [DbFact]
+    public void HoaDon_SoNgayThue_CoDonVi()
+    {
+        using var db = Db.Mo();
+        string maHd = db.HoaDons.Where(h => h.DaXoa != true).OrderBy(h => h.MaHd).Select(h => h.MaHd).First();
+        Sta.Run(() =>
+        {
+            using var w = new MessageBoxWatcher();
+            using var f = new FormHoaDon(maHd);
+            Rf.Call(f, "FormHoaDon_Load", f, EventArgs.Empty);
+            string s = Rf.Get<TextBox>(f, "txtSoNgayThuePhong").Text;
+            Assert.True(s.EndsWith(" ngày") || s.EndsWith(" giờ"), "Số ngày thiếu đơn vị: " + s);
+        });
+    }
+
+    [DbFact]
+    public void SuaChiTietPhieu_ChonDungDongTheoMaCTDP()
+    {
+        using var db = Db.Mo();
+        var ctdp = db.Ctdps.AsNoTracking().Where(c => c.DaXoa != true).OrderBy(c => c.MaCtdp).First();
+        Sta.Run(() =>
+        {
+            using var w = new MessageBoxWatcher();
+            using var f = new FormSuaChiTietPhieuThue { MaPhieuThue = ctdp.MaPt, MaPhong = ctdp.MaPh, MaChiTietDatPhong = ctdp.MaCtdp };
+            Rf.Call(f, "FormSuaChiTietPhieuThue_Load", f, EventArgs.Empty);
+            Assert.Equal("Cập nhật trạng thái CTDP " + ctdp.MaCtdp, Rf.Get<Label>(f, "lbMaCTDP").Text);
+        });
+    }
+
+    [DbFact]
+    public void SuaChiTietPhieu_DaDatSangDaThanhToan_BiChanVaKhongGhiDb()
+    {
+        using var db = Db.Mo();
+        var ctdp = db.Ctdps.AsNoTracking().FirstOrDefault(c => c.DaXoa != true && c.TrangThai == "Đã đặt");
+        if (ctdp == null) return; // Không có dữ liệu "Đã đặt" để kiểm tra
+        string ttPhongTruoc = db.Phongs.AsNoTracking().First(p => p.MaPh == ctdp.MaPh).Ttph;
+        int soHdTruoc = db.HoaDons.Count();
+
+        Sta.Run(() =>
+        {
+            using var w = new MessageBoxWatcher();
+            using var f = new FormSuaChiTietPhieuThue { MaPhieuThue = ctdp.MaPt, MaPhong = ctdp.MaPh, MaChiTietDatPhong = ctdp.MaCtdp };
+            Rf.Call(f, "FormSuaChiTietPhieuThue_Load", f, EventArgs.Empty);
+            Rf.Get<ComboBox>(f, "cbTrangThaiCTDP").SelectedItem = "Đã thanh toán";
+            Rf.Call(f, "btnCapNhat_Click", f, EventArgs.Empty);
+            Assert.Contains(w.Messages, m => m.Contains("Không thể chuyển trực tiếp sang"));
+        });
+
+        using var db2 = Db.Mo();
+        Assert.Equal("Đã đặt", db2.Ctdps.AsNoTracking().First(c => c.MaCtdp == ctdp.MaCtdp).TrangThai);
+        Assert.Equal(ttPhongTruoc, db2.Phongs.AsNoTracking().First(p => p.MaPh == ctdp.MaPh).Ttph);
+        Assert.Equal(soHdTruoc, db2.HoaDons.Count());
     }
 
     // ===================== Tài khoản =====================

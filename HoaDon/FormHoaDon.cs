@@ -76,9 +76,10 @@ namespace HotelManagement.HoaDon
                     .Select(c => new
                     {
                         TenDV = c.MaDvNavigation.TenDv,
-                        DonGia = c.MaDvNavigation.DonGia,
+                        // Lấy giá/thành tiền đã lưu lúc dùng dịch vụ để khớp với trị giá hóa đơn
+                        DonGia = c.DonGia ?? c.MaDvNavigation.DonGia,
                         SL = c.Sl,
-                        ThanhTien = c.MaDvNavigation.DonGia * c.Sl
+                        ThanhTien = c.ThanhTien ?? (c.MaDvNavigation.DonGia * c.Sl)
                     })
                     .ToList();
                 decimal tienPhong = hoaDon.ThanhTien ?? 0;
@@ -99,7 +100,7 @@ namespace HotelManagement.HoaDon
                 }
                 else
                 {
-                    txtSoNgayThuePhong.Text = thoiGianThue.Days.ToString();
+                    txtSoNgayThuePhong.Text = thoiGianThue.Days + " ngày";
                 }
                 dtgDichVuDaDung.DataSource = dichVu;
                 dtgDichVuDaDung.Columns["TenDV"].HeaderText = "Tên dịch vụ";

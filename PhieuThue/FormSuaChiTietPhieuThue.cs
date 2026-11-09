@@ -20,6 +20,10 @@ namespace HotelManagement.PhieuThue
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string? MaPhong { get; set; }
+        // Mã chi tiết phiếu của dòng được chọn (để không sửa nhầm khi 1 phiếu có cùng phòng nhiều lần)
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string? MaChiTietDatPhong { get; set; }
         public FormSuaChiTietPhieuThue()
         {
             InitializeComponent();
@@ -47,9 +51,11 @@ namespace HotelManagement.PhieuThue
             try
             {
                 using var db = new HotelManagementContext();
+                string? maCTDP = MaChiTietDatPhong;
                 var chiTiet = db.Ctdps
                     .AsNoTracking()
                     .Where(c => c.MaPt == maPT && c.MaPh == maPH && c.DaXoa != true)
+                    .Where(c => string.IsNullOrEmpty(maCTDP) || c.MaCtdp == maCTDP)
                     .OrderByDescending(c => c.MaCtdp)
                     .Select(c => new { c.MaCtdp, c.TrangThai })
                     .FirstOrDefault();
@@ -104,6 +110,16 @@ namespace HotelManagement.PhieuThue
                 if (chiTiet.TrangThai == trangThaiMoi)
                 {
                     MessageBox.Show("Trạng thái không thay đổi.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                // Chuyển sang "Đã thanh toán" ở đây sẽ không lập hóa đơn -> mất doanh thu.
+                // Phải chuyển sang "Đang thuê" rồi thanh toán bằng cột "Thanh toán" ở chi tiết phiếu thuê.
+                if (trangThaiMoi == "Đã thanh toán")
+                {
+                    MessageBox.Show("Không thể chuyển trực tiếp sang \"Đã thanh toán\" vì chưa lập hóa đơn!\n" +
+                                    "Hãy chuyển sang \"Đang thuê\", sau đó dùng chức năng \"Thanh toán\" ở chi tiết phiếu thuê.",
+                                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    cbTrangThaiCTDP.Focus();
                     return;
                 }
                 chiTiet.TrangThai = trangThaiMoi;

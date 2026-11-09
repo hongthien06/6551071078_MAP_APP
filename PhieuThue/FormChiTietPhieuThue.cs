@@ -200,6 +200,7 @@ namespace HotelManagement.PhieuThue
                 {
                     frm.MaPhieuThue = MaPhieuThue;
                     frm.MaPhong = maPH;
+                    frm.MaChiTietDatPhong = maCTDP;
                     frm.ShowDialog();
                 }
                 LoadDanhSachChiTietPhieuThue();
@@ -318,7 +319,7 @@ namespace HotelManagement.PhieuThue
                 decimal tienPhong = chiTiet.ThanhTien ?? 0m;
                 decimal tienDV = db.Ctdvs
                     .Where(v => v.MaCtdp == maCTDP && v.DaXoa != true)
-                    .Sum(v => v.ThanhTien ?? 0m);
+                    .Sum(v => v.ThanhTien ?? (v.Sl * v.MaDvNavigation.DonGia));
                 decimal tongTien = tienPhong + tienDV;
                 string maHD = TaoMaTiepTheo(db.HoaDons.Select(h => h.MaHd).ToList(), "HD", 3, 5);
                 db.HoaDons.Add(new Models.HoaDon
@@ -334,7 +335,14 @@ namespace HotelManagement.PhieuThue
                 chiTiet.TrangThai = "Đã thanh toán";
                 var phong = db.Phongs.FirstOrDefault(p => p.MaPh == maPhong);
                 if (phong != null)
-                    phong.Ttph = "Bình thường";
+                {
+                    // Phòng còn lượt đặt khác chưa nhận thì giữ trạng thái "Đã đặt"
+                    bool conLuotDatKhac = db.Ctdps.Any(c => c.MaPh == maPhong
+                                                         && c.MaCtdp != maCTDP
+                                                         && c.DaXoa != true
+                                                         && c.TrangThai == "Đã đặt");
+                    phong.Ttph = conLuotDatKhac ? "Đã đặt" : "Bình thường";
+                }
                 db.SaveChanges();
                 giaoDich.Commit();
                 MessageBox.Show("Thanh toán thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);

@@ -96,10 +96,11 @@ namespace HotelManagement.HoaDon
                         h.NgHd,
                         TenNV = h.MaNvNavigation.TenNv,
                         h.MaCtdp,
-                        TriGia = (h.MaCtdpNavigation.ThanhTien ?? 0)
+                        // Ưu tiên trị giá đã chốt khi thanh toán; chỉ tính lại nếu chưa có
+                        TriGia = h.TriGia ?? ((h.MaCtdpNavigation.ThanhTien ?? 0)
                            + h.MaCtdpNavigation.Ctdvs
                                .Where(c => c.DaXoa != true)
-                               .Sum(c => c.MaDvNavigation.DonGia * c.Sl),
+                               .Sum(c => c.ThanhTien ?? (c.MaDvNavigation.DonGia * c.Sl))),
                         h.TrangThai
                     })
                     .ToList();
