@@ -25,7 +25,6 @@ Võ Hồng Thiên - 6551071078 - CQ.65.CNTT
 3. Quản lý hoá đơn: danh sách, lọc theo ngày, tìm kiếm, xuất Excel, xem và in hoá đơn PDF (`HoaDon/`). Menu "Danh sách hóa đơn".
 4. Quản lý tài khoản và quyền: danh sách, tìm kiếm, xuất Excel, thêm / sửa / xoá (`TaiKhoan/`). Menu "Danh sách tài khoản".
 5. Dashboard thống kê kinh doanh theo khoảng thời gian (`ThongKe/FormThongKe`, biểu đồ `WinForms.DataVisualization`). Menu "Thống kê".
-6. Unit test (`HotelManagement.Tests/`): `dotnet test HotelManagement.Tests`. Test dùng CSDL tự bỏ qua nếu không kết nối được; test ghi dữ liệu tự tạo và tự xoá dữ liệu tạm.
 
 ### Chạy thử
 1. Chạy `Database/Database.sql` trong SQL Server (SSMS), hoặc `sqlcmd -I -i Database/Database.sql` (cần cờ `-I`).
