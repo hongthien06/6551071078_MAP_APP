@@ -149,6 +149,25 @@ internal sealed class MessageBoxWatcher : IDisposable
 
             var tieuDe = new StringBuilder(256);
             GetWindowText(h, tieuDe, 256);
+
+            // Hộp thoại Lưu file: điền tên file rồi bấm Save
+            if (TenFileLuu != null)
+            {
+                IntPtr oTen = TimOTenFile(h);
+                if (oTen != IntPtr.Zero)
+                {
+                    SendMessage(oTen, WM_SETTEXT, IntPtr.Zero, TenFileLuu);
+                    lock (_khoa) Messages.Add($"[{tieuDe}] (lưu file) {TenFileLuu}");
+                    PostMessage(h, WM_COMMAND, (IntPtr)IDOK, IntPtr.Zero);
+                    return true;
+                }
+                if (tieuDe.ToString().StartsWith("Lưu") || tieuDe.ToString().StartsWith("Xuất"))
+                {
+                    lock (_khoa) _daXuLy.Remove(h); // ô tên file chưa sẵn sàng, quét lại lần sau
+                    return true;
+                }
+            }
+
             string noiDung = "";
             var cacNut = new List<int>();
             EnumChildWindows(h, (c, _) =>
@@ -177,6 +196,42 @@ internal sealed class MessageBoxWatcher : IDisposable
             PostMessage(h, WM_COMMAND, (IntPtr)nut, IntPtr.Zero);
             return true;
         }, IntPtr.Zero);
+    }
+
+    /// <summary>Đường dẫn sẽ điền vào hộp thoại SaveFileDialog (null = không xử lý hộp thoại file).</summary>
+    public string? TenFileLuu { get; set; }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern IntPtr SendMessage(IntPtr h, uint msg, IntPtr w, string l);
+    private const uint WM_SETTEXT = 0x000C;
+    private const int ID_O_TEN_FILE = 0x47C; // cmb13 / edt1 của hộp thoại file kiểu cũ
+    private const int ID_O_TEN_FILE_MOI = 1001;
+
+    private static IntPtr TimOTenFile(IntPtr dialog)
+    {
+        IntPtr khung = IntPtr.Zero, oEdit = IntPtr.Zero;
+        EnumChildWindows(dialog, (c, _) =>
+        {
+            var lop = new StringBuilder(64);
+            GetClassName(c, lop, 64);
+            // Hộp thoại kiểu mới (Vista+): ô tên file là Edit id 1001
+            if (lop.ToString() == "Edit" && GetDlgCtrlID(c) == ID_O_TEN_FILE_MOI && IsWindowVisible(c)) { oEdit = c; return false; }
+            if (GetDlgCtrlID(c) == ID_O_TEN_FILE) { khung = c; return false; }
+            return true;
+        }, IntPtr.Zero);
+        if (oEdit != IntPtr.Zero) return oEdit;
+        if (khung == IntPtr.Zero) return IntPtr.Zero;
+
+        var k = new StringBuilder(64);
+        GetClassName(khung, k, 64);
+        if (k.ToString() == "Edit") return khung;
+        EnumChildWindows(khung, (c, _) =>
+        {
+            var kk = new StringBuilder(64);
+            GetClassName(c, kk, 64);
+            if (kk.ToString() == "Edit") { oEdit = c; return false; }
+            return true;
+        }, IntPtr.Zero);
+        return oEdit;
     }
 
     public void Dispose() => _timer.Dispose();
